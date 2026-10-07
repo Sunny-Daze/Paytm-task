@@ -2,6 +2,7 @@ import type { Server } from "node:http";
 import app from "./app.js";
 import appConfig from "./config/app.config.js";
 import { closeDb, connectDb } from "./db/postgres.db.js";
+import { closeRedis, connectRedis } from "./db/redis.db.js";
 
 const PORT = appConfig.PORT;
 const SHUTDOWN_TIMEOUT_MS = 10_000;
@@ -10,6 +11,13 @@ try {
   await connectDb();
 } catch (err) {
   console.error("PostgreSQL connection error:", err);
+  process.exit(1);
+}
+
+try {
+  await connectRedis();
+} catch (err) {
+  console.error("Redis connection error:", err);
   process.exit(1);
 }
 
@@ -41,6 +49,7 @@ const shutdown = async (signal: string, exitCode = 0) => {
 
     // Close other resources
     await closeDb();
+    await closeRedis();
 
     process.exit(exitCode);
   } catch (err) {
