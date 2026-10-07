@@ -1,9 +1,17 @@
 import type { Server } from "node:http";
 import app from "./app.js";
 import appConfig from "./config/app.config.js";
+import { closeDb, connectDb } from "./db/postgres.db.js";
 
 const PORT = appConfig.PORT;
 const SHUTDOWN_TIMEOUT_MS = 10_000;
+
+try {
+  await connectDb();
+} catch (err) {
+  console.error("PostgreSQL connection error:", err);
+  process.exit(1);
+}
 
 const server: Server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
@@ -32,6 +40,7 @@ const shutdown = async (signal: string, exitCode = 0) => {
     console.log("HTTP server closed");
 
     // Close other resources
+    await closeDb();
 
     process.exit(exitCode);
   } catch (err) {

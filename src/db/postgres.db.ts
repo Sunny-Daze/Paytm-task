@@ -8,32 +8,18 @@ const db = new Pool({
   connectionTimeoutMillis: 5000,
 });
 
-(async () => {
-  try {
-    await db.query("SELECT 1");
-    console.log("Connected to PostgreSQL");
-  } catch (err) {
-    console.error("PostgreSQL connection error:", err);
-    process.exit(1);
-  }
-})();
-
 db.on("error", (err) => {
   console.error("Unexpected PostgreSQL error:", err);
 });
 
-const shutdown = async () => {
-  try {
-    await db.end();
-    console.log("PostgreSQL connection closed");
-    process.exit(0);
-  } catch (err) {
-    console.error("Error closing PostgreSQL connection:", err);
-    process.exit(1);
-  }
+export const connectDb = async () => {
+  await db.query("SELECT 1");
+  console.log("Connected to PostgreSQL");
 };
 
-process.on("SIGTERM", shutdown);
-process.on("SIGINT", shutdown);
+export const closeDb = async () => {
+  await db.end();
+  console.log("PostgreSQL connection closed");
+};
 
 export default db;
