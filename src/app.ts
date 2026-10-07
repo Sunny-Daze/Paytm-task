@@ -1,5 +1,6 @@
 import express from "express";
 import { errorHandler } from "./middlewares/errorHandler.middleware.js";
+import './db/postgres.db.js';
 
 const app = express();
 
