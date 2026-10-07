@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import "dotenv/config";
 import { getEnv } from "../shared/env/env.js";
 
 const appConfig = {

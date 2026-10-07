@@ -9,5 +9,5 @@ export class AppError extends Error {
 }
 
 export const httpError = (statusCode: number, message: string) => {
-    throw new AppError(statusCode, message);
-}
+  throw new AppError(statusCode, message);
+};

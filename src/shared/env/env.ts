@@ -12,4 +12,4 @@ export function getEnv(key: string, fallback?: string): string {
   }
 
   throw new Error(`Missing required env variable: ${key}`);
-};
+}
