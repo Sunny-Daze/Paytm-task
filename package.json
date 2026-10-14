@@ -7,6 +7,10 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node .",
+    "migrate": "node-pg-migrate",
+    "db:create": "node-pg-migrate create --migrations-dir src/db-migrations --migration-file-language ts",
+    "db:up": "node-pg-migrate up --migrations-dir src/db-migrations --migration-file-language ts",
+    "db:down": "node-pg-migrate down --migrations-dir src/db-migrations --migration-file-language ts",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,json}\"",
     "prepare": "husky"
   },
@@ -19,14 +23,15 @@
     "@types/ioredis": "^4.28.10",
     "@types/node": "^26.6.4",
     "@types/pg": "^8.23.1",
-    "dotenv": "^18.0.6",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
+    "node-pg-migrate": "^9.0.0",
     "prettier": "^3.9.9",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   },
   "dependencies": {
+    "dotenv": "^18.0.7",
     "express": "^5.2.1",
     "ioredis": "^6.0.0",
     "pg": "^8.23.1"
