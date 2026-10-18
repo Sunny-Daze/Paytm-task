@@ -21,6 +21,7 @@
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/ioredis": "^4.28.10",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.6.4",
     "@types/pg": "^8.23.1",
     "husky": "^9.1.7",
@@ -34,7 +35,9 @@
     "dotenv": "^18.0.7",
     "express": "^5.2.1",
     "ioredis": "^6.0.0",
-    "pg": "^8.23.1"
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.23.1",
+    "zod": "^4.6.7"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx,js,json}": "prettier --write"

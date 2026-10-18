@@ -7,7 +7,7 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
     "idempotency_requests",
     {
       user_id: {
-        type: "uuid",
+        type: "text",
         notNull: true,
         references: "users(id)",
       },
@@ -33,19 +33,21 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
       },
       response_body: {
         type: "jsonb",
-        notNull: true,
       },
       created_at: {
         type: "timestamptz",
         notNull: true,
         default: pgm.func("now()"),
       },
+      completed_at: {
+        type: "timestamptz",
+      },
     },
     {
       constraints: {
         primaryKey: ["user_id", "operation", "idempotency_key"],
         check: [
-          "(response_status IS NULL) = (response_body IS NOT NULL)",
+          "(response_status IS NULL) = (response_body IS NULL)",
           "(completed_at IS NULL) = (response_status IS NULL)",
         ],
       },

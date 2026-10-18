@@ -1,15 +1,33 @@
 import type { NextFunction, Request, Response } from "express";
+import { ZodError } from "zod";
 import { AppError } from "../shared/http/httpError.js";
 
 export const errorHandler = (
   err: Error,
   req: Request,
   res: Response,
-  _next: NextFunction,
+  next: NextFunction,
 ) => {
-  const isAppError = err instanceof AppError;
+  if (res.headersSent) {
+    return next(err);
+  }
 
-  if (isAppError) {
+  if (err instanceof ZodError) {
+    return res.status(400).json({
+      success: false,
+      error: "Validation failed",
+      details: err.issues.map((issue) => ({
+        path: issue.path.map(String).join("."),
+        message: issue.message,
+      })),
+    });
+  }
+
+  if (err instanceof AppError) {
+    if (err.statusCode >= 500) {
+      console.error(`[ERROR] ${req.method} ${req.originalUrl} ->`, err);
+    }
+
     return res
       .status(err.statusCode)
       .json({ success: false, error: err.message });

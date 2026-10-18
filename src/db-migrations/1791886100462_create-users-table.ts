@@ -19,6 +19,9 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
       notNull: true,
       default: pgm.func("now()"),
     },
+    last_login_at: {
+      type: "timestamptz",
+    },
   });
 }
 
