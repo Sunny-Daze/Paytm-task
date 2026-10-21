@@ -28,9 +28,12 @@ export const errorHandler = (
       console.error(`[ERROR] ${req.method} ${req.originalUrl} ->`, err);
     }
 
-    return res
-      .status(err.statusCode)
-      .json({ success: false, error: err.message });
+    return res.status(err.statusCode).json({
+      success: false,
+      error: err.message,
+      ...(err.code !== undefined && { code: err.code }),
+      ...(err.details !== undefined && { details: err.details }),
+    });
   }
 
   console.error(`[ERROR] ${req.method} ${req.originalUrl} ->`, err);

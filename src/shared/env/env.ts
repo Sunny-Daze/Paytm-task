@@ -13,3 +13,13 @@ export function getEnv(key: string, fallback?: string): string {
 
   throw new Error(`Missing required env variable: ${key}`);
 }
+
+export const getPositiveIntEnv = (key: string, fallback: number): number => {
+  const value = Number(getEnv(key, String(fallback)));
+
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(`Env variable ${key} must be a positive integer`);
+  }
+
+  return value;
+};

@@ -33,9 +33,9 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
         notNull: true,
         check: "status IN ('held', 'confirmed', 'cancelled', 'expired')",
       },
+      // Only set for reservations that start as a time-boxed hold
       hold_expires_at: {
         type: "timestamptz",
-        notNull: true,
       },
       created_at: {
         type: "timestamptz",

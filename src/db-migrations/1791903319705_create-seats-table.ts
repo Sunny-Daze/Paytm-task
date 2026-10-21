@@ -24,7 +24,7 @@ export async function up(pgm: MigrationBuilder): Promise<void> {
       status: {
         type: "text",
         notNull: true,
-        check: "status IN ('available', 'held', 'reserved')",
+        check: "status IN ('available', 'held', 'confirmed')",
       },
       current_reservation_id: {
         type: "uuid",
