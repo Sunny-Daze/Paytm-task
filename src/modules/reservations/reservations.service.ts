@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import pg, { type PoolClient } from "pg";
 import appConfig from "../../config/app.config.js";
 import { withTransaction } from "../../db/postgres.db.js";
+import { KeyedGate } from "../../shared/concurrency/keyedGate.js";
 import { httpError } from "../../shared/http/httpError.js";
 import { getShowMeta } from "../shows/shows.service.js";
 import type { ShowMeta } from "../shows/shows.types.js";
@@ -41,55 +42,82 @@ const hashReserveRequest = (showId: string, seats: string[]): string =>
     .update(JSON.stringify({ show_id: showId, seats: [...seats].sort() }))
     .digest("hex");
 
+const seatGate = new KeyedGate();
+
 export const reserveSeats = async (
   input: ReserveSeatsInput,
 ): Promise<ReserveSeatsResult> => {
   const requestHash = hashReserveRequest(input.showId, input.seats);
+  const seatKeys = input.seats.map((label) => `${input.showId}:${label}`);
+  const showMeta = getShowMeta(input.showId);
+  let show: ShowMeta | undefined;
+  let cacheAvailable = true;
 
-  const [cachedResult, show, claimedByOthers] = await Promise.all([
-    getCachedReserveResult(input.userId, input.idempotencyKey),
-    getShowMeta(input.showId),
-    findSeatsClaimedByOthers(input.showId, input.seats, input.userId),
-  ]);
+  for (;;) {
+    const [cachedResult, meta, claimedByOthers] = await Promise.all([
+      getCachedReserveResult(input.userId, input.idempotencyKey),
+      showMeta,
+      findSeatsClaimedByOthers(input.showId, input.seats, input.userId),
+    ]);
+    show = meta;
 
-  if (cachedResult) {
-    if (cachedResult.request_hash !== requestHash) {
-      return httpError(
-        409,
-        "Idempotency key was already used with a different request",
-        {
-          code: "IDEMPOTENCY_KEY_REUSED",
-        },
-      );
+    if (cachedResult) {
+      if (cachedResult.request_hash !== requestHash) {
+        return httpError(
+          409,
+          "Idempotency key was already used with a different request",
+          {
+            code: "IDEMPOTENCY_KEY_REUSED",
+          },
+        );
+      }
+
+      return {
+        statusCode: cachedResult.status_code,
+        body: cachedResult.body,
+        replayed: true,
+      };
     }
 
-    return {
-      statusCode: cachedResult.status_code,
-      body: cachedResult.body,
-      replayed: true,
-    };
+    if (!show) {
+      return httpError(404, "Show not found", { code: "SHOW_NOT_FOUND" });
+    }
+
+    if (claimedByOthers === null) {
+      cacheAvailable = false;
+      break;
+    }
+
+    if (claimedByOthers.length > 0) {
+      return httpError(409, "Seats already taken", {
+        code: "SEAT_TAKEN",
+        details: { seats: claimedByOthers },
+      });
+    }
+
+    const busy = seatGate.busy(seatKeys);
+
+    if (!busy) {
+      break;
+    }
+
+    await busy;
   }
 
-  if (!show) {
-    return httpError(404, "Show not found", { code: "SHOW_NOT_FOUND" });
-  }
+  const knownShow = show;
+  const reserve = async () => {
+    const result = await reserveSeatsInDb(input, knownShow, requestHash);
 
-  if (claimedByOthers.length > 0) {
-    return httpError(409, "Seats already taken", {
-      code: "SEAT_TAKEN",
-      details: { seats: claimedByOthers },
+    await cacheReserveResult(input.userId, input.idempotencyKey, {
+      request_hash: requestHash,
+      status_code: result.statusCode,
+      body: result.body,
     });
-  }
 
-  const result = await reserveSeatsInDb(input, show, requestHash);
+    return result;
+  };
 
-  await cacheReserveResult(input.userId, input.idempotencyKey, {
-    request_hash: requestHash,
-    status_code: result.statusCode,
-    body: result.body,
-  });
-
-  return result;
+  return cacheAvailable ? seatGate.run(seatKeys, reserve) : reserve();
 };
 
 const reserveSeatsInDb = (

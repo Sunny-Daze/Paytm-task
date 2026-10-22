@@ -1,5 +1,6 @@
 import redis from "../../db/redis.db.js";
 import { bestEffort } from "../../shared/cache/bestEffort.js";
+import { jitteredTtlSeconds } from "../../shared/cache/jitter.js";
 import type { ReservationResponse } from "./reservations.types.js";
 
 const IDEMPOTENCY_TTL_SECONDS = 24 * 60 * 60;
@@ -35,7 +36,7 @@ export const findSeatsClaimedByOthers = (
   showId: string,
   labels: string[],
   userId: string,
-): Promise<string[]> =>
+): Promise<string[] | null> =>
   bestEffort(
     "check seat claims",
     async () => {
@@ -48,7 +49,8 @@ export const findSeatsClaimedByOthers = (
         return raw ? (JSON.parse(raw) as SeatClaim).user_id !== userId : false;
       });
     },
-    [],
+
+    null,
   );
 
 export const cacheReserveResult = (
@@ -66,7 +68,7 @@ export const cacheReserveResult = (
           idempotencyKey(userId, key),
           JSON.stringify(result),
           "EX",
-          IDEMPOTENCY_TTL_SECONDS,
+          jitteredTtlSeconds(IDEMPOTENCY_TTL_SECONDS),
         );
 
       const holdExpiresAt = body.hold_expires_at
@@ -115,7 +117,7 @@ export const cacheConfirmedSeats = (
           seatKey(showId, label),
           claim,
           "EX",
-          CONFIRMED_SEAT_TTL_SECONDS,
+          jitteredTtlSeconds(CONFIRMED_SEAT_TTL_SECONDS),
         ),
       );
       await pipeline.exec();

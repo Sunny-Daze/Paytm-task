@@ -7,6 +7,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node .",
+    "burst": "node scripts/burst.mjs",
     "migrate": "node-pg-migrate",
     "db:create": "node-pg-migrate create --migrations-dir src/db-migrations --migration-file-language ts",
     "db:up": "node-pg-migrate up --migrations-dir src/db-migrations --migration-file-language ts",

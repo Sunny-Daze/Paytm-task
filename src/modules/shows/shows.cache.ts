@@ -1,5 +1,6 @@
 import redis from "../../db/redis.db.js";
 import { bestEffort } from "../../shared/cache/bestEffort.js";
+import { jitteredTtlSeconds } from "../../shared/cache/jitter.js";
 import type { ShowMeta } from "./shows.types.js";
 
 const SHOW_META_TTL_SECONDS = 24 * 60 * 60;
@@ -24,7 +25,7 @@ export const cacheShowMeta = (showId: string, meta: ShowMeta): Promise<void> =>
         showMetaKey(showId),
         JSON.stringify(meta),
         "EX",
-        SHOW_META_TTL_SECONDS,
+        jitteredTtlSeconds(SHOW_META_TTL_SECONDS),
       );
     },
     undefined,
