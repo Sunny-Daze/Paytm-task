@@ -18,6 +18,7 @@ WORKDIR /app
 COPY --from=deps --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/dist ./dist
 COPY --chown=node:node package.json docker-entrypoint.sh ./
+RUN sed -i 's/\r$//' docker-entrypoint.sh && chmod +x docker-entrypoint.sh
 USER node
 EXPOSE 8000
 HEALTHCHECK --interval=15s --timeout=3s --start-period=30s --retries=3 \
