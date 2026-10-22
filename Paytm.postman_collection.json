@@ -1,0 +1,288 @@
+{
+  "info": {
+    "_postman_id": "f95cc65e-c67c-4a46-944f-10882e6216ff",
+    "name": "Paytm",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "38990633",
+    "_collection_link": "https://go.postman.co/collection/38990633-f95cc65e-c67c-4a46-944f-10882e6216ff?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check(Readiness)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ BASEURL }}/api/v1/health/ready",
+              "host": [
+                "{{ BASEURL }}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "health",
+                "ready"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Health check(Liveness)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ BASEURL }}/api/v1/health/live",
+              "host": [
+                "{{ BASEURL }}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "health",
+                "live"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();\n\nif (pm.response.code === 200 && res.data.token) {\n    pm.collectionVariables.set(\"authToken\", res.data.token);\n} else {\n  console.warn(\"Login failed or token missing\", res);\n}\n\npm.test(\"Status code is 200\", function () {\n    pm.response.to.have.status(200);\n});\n\npm.test(\"Response contains token\", function () {\n    pm.expect(res.data).to.have.property(\"token\");\n    pm.expect(res.data.token).to.be.a(\"string\").and.not.empty;\n});\n\npm.test(\"authToken collection variable is set\", function () {\n    const authToken = pm.collectionVariables.get(\"authToken\");\n    pm.expect(authToken).to.be.a(\"string\").and.not.empty;\n});\n\npm.test(\"authToken matches token from response\", function () {\n    const authToken = pm.collectionVariables.get(\"authToken\");\n    pm.expect(authToken).to.eql(res.data.token);\n});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"sunny\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{ BASEURL }}/api/v1/auth/login",
+              "host": [
+                "{{ BASEURL }}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetMe",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ BASEURL }}/api/v1/auth/me",
+              "host": [
+                "{{ BASEURL }}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Shows",
+      "item": [
+        {
+          "name": "CreateShow",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"avengers\",\n    \"seats\": [\n        \"A1\",\n        \"A2\",\n        \"A3\",\n        \"A4\",\n        \"A5\"\n    ],\n    \"price_paise\": 2500\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{ BASEURL }}/api/v1/shows",
+              "host": [
+                "{{ BASEURL }}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "shows"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GetShowInfo",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ BASEURL }}/api/v1/shows/cc9b2953-5022-49a7-95b0-7751d4cba0b7",
+              "host": [
+                "{{ BASEURL }}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "shows",
+                "cc9b2953-5022-49a7-95b0-7751d4cba0b7"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ReserveSeat",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"seats\": [\"A2\"],\n  \"idempotency_key\": \"test1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{ BASEURL }}/api/v1/shows/cc9b2953-5022-49a7-95b0-7751d4cba0b7/reserve",
+              "host": [
+                "{{ BASEURL }}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "shows",
+                "cc9b2953-5022-49a7-95b0-7751d4cba0b7",
+                "reserve"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ConfirmSeat",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{ BASEURL }}/api/v1/reservations/cc9b2953-5022-49a7-95b0-7751d4cba0b7/confirm",
+              "host": [
+                "{{ BASEURL }}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "reservations",
+                "cc9b2953-5022-49a7-95b0-7751d4cba0b7",
+                "confirm"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": " BASEURL ",
+      "value": ""
+    },
+    {
+      "key": "authToken",
+      "value": ""
+    }
+  ]
+}

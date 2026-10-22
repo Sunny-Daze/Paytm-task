@@ -3,6 +3,14 @@ Seat reservation API (Node + Express + Postgres + Redis) built to stay correct u
 - Live: https://paytm-task-yfx0.onrender.com (API at `/api/v1`, e.g. [`/api/v1/health/ready`](https://paytm-task-yfx0.onrender.com/api/v1/health/ready))
 - Repo: https://github.com/Sunny-Daze/PTM-task — clone with `git clone https://github.com/Sunny-Daze/PTM-task.git && cd PTM-task`
 
+## Postman collection
+
+Import [`Paytm.postman_collection.json`](Paytm.postman_collection.json) into Postman.
+
+- Set the `BASEURL` collection variable to `http://localhost:8000` or `https://paytm-task-yfx0.onrender.com`.
+- Run **Auth → login** first; it saves the token to `authToken`, which every other request uses.
+- Replace the show / reservation ids in the paths with ones from your own responses.
+
 ## Local setup (Docker)
 
 Requires Docker with Compose.
