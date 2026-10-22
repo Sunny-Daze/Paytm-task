@@ -1,0 +1,15 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+.git
+.husky
+*.log
+Dockerfile
+.dockerignore
+docker-compose.yml
+scripts
+burst.sh
+problem_statement.txt
+README.md
